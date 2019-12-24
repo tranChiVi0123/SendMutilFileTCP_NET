@@ -406,6 +406,7 @@ public partial class Main : Form
     List<Teacher> listTc;
     private void btnExcelExport_Click(Object sender, EventArgs e)
     {
+        btnExcelExport.Enabled = false;
         if (txtFile.Text != "")
         {
             Excel.Application excel = new Excel.Application();
@@ -471,7 +472,7 @@ public partial class Main : Form
                 dt.Rows.Add(r);
             }
             
-            Export(dt, "PHÂN CÔNG CÁN BỘ COI THI", dt.Rows.Count/10);
+            Export(dt, "PHÂN CÔNG CÁN BỘ COI THI", dt.Rows.Count/20);//==> Sửa row
         }
     }
     private void btnExcelImport_Click(object sender, EventArgs e)
@@ -491,11 +492,11 @@ public partial class Main : Form
         Excel.Workbooks oBooks;
         Excel.Sheets oSheets;
         Excel.Workbook oBook;
-        Excel.Worksheet[] oSheet = new Excel.Worksheet[sheetCount+1];
+        Excel.Worksheet[] oSheet = new Excel.Worksheet[sheetCount + 1];//=> Chỉnh Sheet
         //Tạo mới một Excel WorkBook 
         oExcel.Visible = true;
         oExcel.DisplayAlerts = false;
-        oExcel.Application.SheetsInNewWorkbook = sheetCount+1;
+        oExcel.Application.SheetsInNewWorkbook = sheetCount + 1;//=> Chỉnh Sheet
         oBooks = oExcel.Workbooks;
         oBook = (Microsoft.Office.Interop.Excel.Workbook)(oExcel.Workbooks.Add(Type.Missing));
         oSheets = oBook.Worksheets;
@@ -503,7 +504,7 @@ public partial class Main : Form
         for(int i = 0; i < sheetCount; i++)
         {
             oSheet[i] = (Microsoft.Office.Interop.Excel.Worksheet)oSheets.get_Item(i+1);
-            oSheet[i].Name = "sheet"+(i+1);
+            oSheet[i].Name = "sheetA"+(i+1);
             DataTable datatable = new DataTable();
             datatable.Columns.Add("ID phòng");
             datatable.Columns.Add("Tên phòng");
@@ -514,35 +515,31 @@ public partial class Main : Form
             datatable.Columns.Add("Tên CB2");//7
             if (i == sheetCount - 1)
             {
-                int lastIndex = dt.Rows.Count % 10;
-                for (int j = 0; j < 10 - lastIndex; j++)
+                int lastIndex = dt.Rows.Count % 20;
+                for (int j = 0; j < 20 - lastIndex; j++)
                 {
                     DataRow row = datatable.NewRow();
-                    row = dt.Rows[i * 10 + j];
+                    row = dt.Rows[i * 20 + j];
                     datatable.ImportRow(row);
                 }
             }
             else
             {
-                for (int j = 0; j < 10; j++)
+                for (int j = 0; j < 20; j++)
                 {
                     DataRow row = datatable.NewRow();
-                    row = dt.Rows[i * 10 + j];
+                    row = dt.Rows[i * 20 + j];
                     datatable.ImportRow(row);
                 }
             }
             fillContent1(oSheet[i], datatable, title);
         }
-
-
-        oSheet[sheetCount] = (Microsoft.Office.Interop.Excel.Worksheet)oSheets.get_Item(sheetCount + 1);
-        oSheet[sheetCount].Name = "sheet" + (sheetCount + 1);
         DataTable teachergs = new DataTable();
         teachergs.Columns.Add("Mã số");
         teachergs.Columns.Add("Tên cán bộ");
         teachergs.Columns.Add("Ngày Sinh");
         teachergs.Columns.Add("Cơ Quan");//4
-        for (int i = sheetCount*20 + 1; i < listTc.Count; i++)
+        for (int i = sheetCount*40 + 1; i < listTc.Count; i++)//=> Sửa Row
         {
             DataRow row = teachergs.NewRow();
             row[0] = listTc[i].id;
@@ -552,9 +549,10 @@ public partial class Main : Form
 
             teachergs.Rows.Add(row);
         }
+        oSheet[sheetCount] = (Microsoft.Office.Interop.Excel.Worksheet)oSheets.get_Item(sheetCount + 1);
+        oSheet[sheetCount].Name = "sheetB" + (sheetCount + 1);
         fillContent2(oSheet[sheetCount], teachergs, "DANH SÁCH CÁN BỘ GIÁM SÁT");
-
-
+        btnExcelExport.Enabled = true;
     }
 
     private void fillContent1(Excel.Worksheet oSheet,DataTable dataTable , string title)
@@ -601,7 +599,7 @@ public partial class Main : Form
         //Lop
         Microsoft.Office.Interop.Excel.Range lop = oSheet.get_Range("A7", "C7");
         lop.MergeCells = true;
-        lop.Value2 = "LỚP : .............";
+        lop.Value2 = "ĐỊA ĐIỂM TỔ CHỨC : .............";
         lop.Font.Bold = false;
         lop.Font.Name = "Tahoma";
         lop.Font.Size = "10";
@@ -609,7 +607,7 @@ public partial class Main : Form
         //Giang Vien
         Microsoft.Office.Interop.Excel.Range giangVien = oSheet.get_Range("D7", "G7");
         giangVien.MergeCells = true;
-        giangVien.Value2 = "GIẢNG VIÊN: .............";
+        giangVien.Value2 = "HỘI ĐỒNG COI THI: .............";
         giangVien.Font.Name = "Tahoma";
         giangVien.Font.Size = "10";
         giangVien.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
@@ -617,7 +615,7 @@ public partial class Main : Form
         //Hoc Phan
         Microsoft.Office.Interop.Excel.Range hocPhan = oSheet.get_Range("A8", "C8");
         hocPhan.MergeCells = true;
-        hocPhan.Value2 = "HỌC PHẦN: .............";
+        hocPhan.Value2 = "MÔN THI: .............";
         hocPhan.Font.Name = "Tahoma";
         hocPhan.Font.Size = "10";
         hocPhan.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
@@ -630,21 +628,21 @@ public partial class Main : Form
         ngayThi.Font.Size = "10";
         ngayThi.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
 
-        //Phong Dao Tao
-        Microsoft.Office.Interop.Excel.Range phongDaoTao = oSheet.get_Range("A9", "C9");
-        phongDaoTao.MergeCells = true;
-        phongDaoTao.Value2 = "PHÒNG ĐÀO TẠO: .............";
-        phongDaoTao.Font.Name = "Tahoma";
-        phongDaoTao.Font.Size = "10";
-        phongDaoTao.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
+        ////Phong Dao Tao
+        //Microsoft.Office.Interop.Excel.Range phongDaoTao = oSheet.get_Range("A9", "C9");
+        //phongDaoTao.MergeCells = true;
+        //phongDaoTao.Value2 = "PHÒNG ĐÀO TẠO: .............";
+        //phongDaoTao.Font.Name = "Tahoma";
+        //phongDaoTao.Font.Size = "10";
+        //phongDaoTao.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
 
-        //Phong Thi
-        Microsoft.Office.Interop.Excel.Range phongThi = oSheet.get_Range("D9", "G9");
-        phongThi.MergeCells = true;
-        phongThi.Value2 = "PHÒNG THI: .............";
-        phongThi.Font.Name = "Tahoma";
-        phongThi.Font.Size = "10";
-        phongThi.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
+        ////Phong Thi
+        //Microsoft.Office.Interop.Excel.Range phongThi = oSheet.get_Range("D9", "G9");
+        //phongThi.MergeCells = true;
+        //phongThi.Value2 = "PHÒNG THI: .............";
+        //phongThi.Font.Name = "Tahoma";
+        //phongThi.Font.Size = "10";
+        //phongThi.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
 
         // Tạo tiêu đề cột 
         Microsoft.Office.Interop.Excel.Range cl1 = oSheet.get_Range("A11", "A11");
@@ -718,30 +716,30 @@ public partial class Main : Form
         // Kẻ viền
         range.Borders.LineStyle = Microsoft.Office.Interop.Excel.Constants.xlSolid;
 
-        // Căn giữa cột STT
-        //Microsoft.Office.Interop.Excel.Range c3 = (Microsoft.Office.Interop.Excel.Range)oSheet.Cells[rowEnd, columnStart];
-        //Microsoft.Office.Interop.Excel.Range c4 = oSheet.get_Range(c1, c3);
-        //oSheet.get_Range(c3, c4).HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-        //Microsoft.Office.Interop.Excel.Range truongKhoa = oSheet.get_Range("A40", "B40");
-        //truongKhoa.MergeCells = true;
-        //truongKhoa.Value2 = "TRƯỞNG KHOA/BỘ MÔN";
-        //truongKhoa.Font.Name = "Tahoma";
-        //truongKhoa.Font.Size = "10";
-        //truongKhoa.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+        //Căn giữa cột STT
+        Microsoft.Office.Interop.Excel.Range c3 = (Microsoft.Office.Interop.Excel.Range)oSheet.Cells[rowEnd, columnStart];
+        Microsoft.Office.Interop.Excel.Range c4 = oSheet.get_Range(c1, c3);
+        oSheet.get_Range(c3, c4).HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+        Microsoft.Office.Interop.Excel.Range truongKhoa = oSheet.get_Range("B34", "C34");
+        truongKhoa.MergeCells = true;
+        truongKhoa.Value2 = "HỘI ĐỒNG COI THI";
+        truongKhoa.Font.Name = "Tahoma";
+        truongKhoa.Font.Size = "10";
+        truongKhoa.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
 
-        //Microsoft.Office.Interop.Excel.Range daNang = oSheet.get_Range("D40", "G40");
-        //daNang.MergeCells = true;
-        //daNang.Value2 = "ĐÀ NẴNG, Ngày.......Tháng.......Năm.....";
-        //daNang.Font.Name = "Tahoma";
-        //daNang.Font.Size = "10";
-        //daNang.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+        Microsoft.Office.Interop.Excel.Range daNang = oSheet.get_Range("D34", "G34");
+        daNang.MergeCells = true;
+        daNang.Value2 = "ĐÀ NẴNG, Ngày.......Tháng.......Năm.....";
+        daNang.Font.Name = "Tahoma";
+        daNang.Font.Size = "10";
+        daNang.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
 
-        //Microsoft.Office.Interop.Excel.Range canBo = oSheet.get_Range("C41", "E41");
-        //canBo.MergeCells = true;
-        //canBo.Value2 = "CÁN BỘ COI THI";
-        //canBo.Font.Name = "Tahoma";
-        //canBo.Font.Size = "10";
-        //canBo.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+        Microsoft.Office.Interop.Excel.Range canBo = oSheet.get_Range("D35", "G35");
+        canBo.MergeCells = true;
+        canBo.Value2 = "TRƯỞNG BAN TỔ CHỨC";
+        canBo.Font.Name = "Tahoma";
+        canBo.Font.Size = "10";
+        canBo.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
     }
     private void fillContent2(Excel.Worksheet oSheet, DataTable dataTable, string title)
     {
@@ -892,30 +890,5 @@ public partial class Main : Form
 
         // Kẻ viền
         range.Borders.LineStyle = Microsoft.Office.Interop.Excel.Constants.xlSolid;
-
-        // Căn giữa cột STT
-        //Microsoft.Office.Interop.Excel.Range c3 = (Microsoft.Office.Interop.Excel.Range)oSheet.Cells[rowEnd, columnStart];
-        //Microsoft.Office.Interop.Excel.Range c4 = oSheet.get_Range(c1, c3);
-        //oSheet.get_Range(c3, c4).HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-        //Microsoft.Office.Interop.Excel.Range truongKhoa = oSheet.get_Range("A40", "B40");
-        //truongKhoa.MergeCells = true;
-        //truongKhoa.Value2 = "TRƯỞNG KHOA/BỘ MÔN";
-        //truongKhoa.Font.Name = "Tahoma";
-        //truongKhoa.Font.Size = "10";
-        //truongKhoa.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-
-        //Microsoft.Office.Interop.Excel.Range daNang = oSheet.get_Range("D40", "G40");
-        //daNang.MergeCells = true;
-        //daNang.Value2 = "ĐÀ NẴNG, Ngày.......Tháng.......Năm.....";
-        //daNang.Font.Name = "Tahoma";
-        //daNang.Font.Size = "10";
-        //daNang.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-
-        //Microsoft.Office.Interop.Excel.Range canBo = oSheet.get_Range("C41", "E41");
-        //canBo.MergeCells = true;
-        //canBo.Value2 = "CÁN BỘ COI THI";
-        //canBo.Font.Name = "Tahoma";
-        //canBo.Font.Size = "10";
-        //canBo.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
     }
 }
